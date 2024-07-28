@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "brickbucket"
+version = "0.1.0"
+description = ""
+authors = ["isaac-fei <isaac.omega.fei@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
