@@ -6,8 +6,8 @@ class BasicBlock(nn.Module):
 
     def __init__(
         self,
-        in_channels: int,
         *,
+        in_channels: int,
         apply_downsample: bool = False,
     ) -> None:
 
