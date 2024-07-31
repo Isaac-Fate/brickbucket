@@ -1,3 +1,5 @@
+from typing import Optional
+
 from torch import Tensor
 from torch import nn
 
@@ -6,9 +8,10 @@ class Bottleneck(nn.Module):
 
     def __init__(
         self,
-        *,
         in_channels: int,
-        middle_channels: int,
+        out_channels: int,
+        *,
+        middle_channels: Optional[int] = None,
         apply_downsample: bool = False,
     ) -> None:
 
@@ -16,15 +19,37 @@ class Bottleneck(nn.Module):
 
         # Attributes
 
-        # Number of input channels
+        # Number of input and output channels
         self._in_channels = in_channels
+        self._out_channels = out_channels
 
         # Number of input and output channels of the middle convolutional layer
         self._middle_channels = middle_channels
 
-        # Number of output channels is 4 times the number of middle channels
-        self._out_channels = 4 * middle_channels
+        if middle_channels is not None:
+            self._middle_channels = middle_channels
 
+        # Number of middle channels is not specified
+        else:
+            # Number of middle channels is 1/4 of the number of output channels
+            self._middle_channels, remainder = divmod(out_channels, 4)
+
+            # Number of output channels must be a multiple of 4
+            if remainder != 0:
+                raise ValueError(
+                    "the number of output channels must be a multiple of 4 since the number of middle channels is not specified"
+                )
+
+        # Ensure that the number of middle channels is less than or equal to the number of input and output channels
+        if (
+            self.middle_channels > self.in_channels
+            or self.middle_channels > self.out_channels
+        ):
+            raise ValueError(
+                "the number of middle channels must be less than or equal to the number of input and output channels, otherwise the structure is not a bottleneck"
+            )
+
+        # Whether to apply downsampling
         self._apply_downsample = apply_downsample
 
         # Stride of the middle convolutional layer
@@ -105,6 +130,7 @@ class Bottleneck(nn.Module):
     def middle_channels(self) -> int:
         """
         The number of input and output channels of the middle convolutional layer.
+        If not specified, the number of middle channels is 1/4 of the number of output channels.
         """
 
         return self._middle_channels
@@ -113,7 +139,7 @@ class Bottleneck(nn.Module):
     def out_channels(self) -> int:
         """
         The number of output channels.
-        It is 4 times the number of middle channels
+        It must be a multiple of 4 if the number of middle channels is not specified.
         """
 
         return self._out_channels

@@ -25,7 +25,7 @@ class BasicBlock(nn.Module):
 
             # The number of output channels should be
             # double the number of input channels
-            out_channels = in_channels * 2
+            self._out_channels = in_channels * 2
 
         # No downsampling is required
         else:
@@ -34,36 +34,34 @@ class BasicBlock(nn.Module):
 
             # The number of output channels should be
             # equal to the number of input channels
-            out_channels = in_channels
-
-        self._out_channels = out_channels
+            self._out_channels = in_channels
 
         # Layers
 
         self.conv1 = nn.Conv2d(
             in_channels,
-            out_channels,
+            self.out_channels,
             kernel_size=3,
             stride=first_conv_stride,
             padding=1,
             bias=False,
         )
 
-        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.bn1 = nn.BatchNorm2d(self.out_channels)
 
         # Reusable inplace ReLU layer
         self.relu = nn.ReLU(inplace=True)
 
         self.conv2 = nn.Conv2d(
-            out_channels,
-            out_channels,
+            self.out_channels,
+            self.out_channels,
             kernel_size=3,
             stride=1,
             padding=1,
             bias=False,
         )
 
-        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.bn2 = nn.BatchNorm2d(self.out_channels)
 
         # The 1x1 convolutional layer is used to match the dimensions
         # of the shortcut connection
@@ -72,12 +70,12 @@ class BasicBlock(nn.Module):
             self.downsample = nn.Sequential(
                 nn.Conv2d(
                     in_channels,
-                    out_channels,
+                    self.out_channels,
                     kernel_size=1,
                     stride=first_conv_stride,
                     bias=False,
                 ),
-                nn.BatchNorm2d(out_channels),
+                nn.BatchNorm2d(self.out_channels),
             )
 
     @property

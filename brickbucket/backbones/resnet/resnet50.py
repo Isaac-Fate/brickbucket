@@ -11,6 +11,8 @@ class ResNet50(nn.Module):
 
         super().__init__()
 
+        # First convolutional block
+
         self.conv1 = nn.Conv2d(
             3,
             64,
@@ -26,64 +28,41 @@ class ResNet50(nn.Module):
 
         self.max_pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
+        # Layers consisting of residual blocks
+
         self.layer1 = nn.Sequential(
-            Bottleneck(
-                in_channels=64,
-                middle_channels=64,
-            ),
-            *(
-                Bottleneck(
-                    in_channels=256,
-                    middle_channels=64,
-                )
-                for _ in range(2)
-            ),
+            Bottleneck(64, 256),
+            *(Bottleneck(256, 256) for _ in range(2)),
         )
 
         self.layer2 = nn.Sequential(
             Bottleneck(
-                in_channels=256,
-                middle_channels=128,
+                256,
+                512,
                 apply_downsample=True,
             ),
-            *(
-                Bottleneck(
-                    in_channels=512,
-                    middle_channels=128,
-                )
-                for _ in range(3)
-            ),
+            *(Bottleneck(512, 512) for _ in range(3)),
         )
 
         self.layer3 = nn.Sequential(
             Bottleneck(
-                in_channels=512,
-                middle_channels=256,
+                512,
+                1024,
                 apply_downsample=True,
             ),
-            *(
-                Bottleneck(
-                    in_channels=1024,
-                    middle_channels=256,
-                )
-                for _ in range(5)
-            ),
+            *(Bottleneck(1024, 1024) for _ in range(5)),
         )
 
         self.layer4 = nn.Sequential(
             Bottleneck(
-                in_channels=1024,
-                middle_channels=512,
+                1024,
+                2048,
                 apply_downsample=True,
             ),
-            *(
-                Bottleneck(
-                    in_channels=2048,
-                    middle_channels=512,
-                )
-                for _ in range(2)
-            ),
+            *(Bottleneck(2048, 2048) for _ in range(2)),
         )
+
+        # Classification layer
 
         self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
 
