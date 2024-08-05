@@ -2,7 +2,7 @@ import torch
 from torch import Tensor
 from torch import nn
 
-from .basic_block import BasicBlock
+from .basic_block_stack import BasicBlockStack
 
 
 class ResNet34(nn.Module):
@@ -30,52 +30,27 @@ class ResNet34(nn.Module):
 
         # Layers consisting of residual blocks
 
-        self.layer1 = nn.Sequential(
-            *(
-                BasicBlock(
-                    in_channels=64,
-                )
-                for _ in range(3)
-            ),
+        self.layer1 = BasicBlockStack(
+            64,
+            num_blocks=3,
         )
 
-        self.layer2 = nn.Sequential(
-            BasicBlock(
-                in_channels=64,
-                apply_downsample=True,
-            ),
-            *(
-                BasicBlock(
-                    in_channels=128,
-                )
-                for _ in range(3)
-            ),
+        self.layer2 = BasicBlockStack(
+            64,
+            num_blocks=4,
+            apply_downsample_in_first_block=True,
         )
 
-        self.layer3 = nn.Sequential(
-            BasicBlock(
-                in_channels=128,
-                apply_downsample=True,
-            ),
-            *(
-                BasicBlock(
-                    in_channels=256,
-                )
-                for _ in range(5)
-            ),
+        self.layer3 = BasicBlockStack(
+            128,
+            num_blocks=6,
+            apply_downsample_in_first_block=True,
         )
 
-        self.layer4 = nn.Sequential(
-            BasicBlock(
-                in_channels=256,
-                apply_downsample=True,
-            ),
-            *(
-                BasicBlock(
-                    in_channels=512,
-                )
-                for _ in range(2)
-            ),
+        self.layer4 = BasicBlockStack(
+            256,
+            num_blocks=3,
+            apply_downsample_in_first_block=True,
         )
 
         # Classification layer

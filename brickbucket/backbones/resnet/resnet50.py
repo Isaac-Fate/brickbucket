@@ -2,7 +2,7 @@ import torch
 from torch import Tensor
 from torch import nn
 
-from .bottleneck import Bottleneck
+from .bottleneck_stack import BottleneckStack
 
 
 class ResNet50(nn.Module):
@@ -28,38 +28,33 @@ class ResNet50(nn.Module):
 
         self.max_pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        # Layers consisting of residual blocks
+        # Layers consisting of bottlenecks
 
-        self.layer1 = nn.Sequential(
-            Bottleneck(64, 256),
-            *(Bottleneck(256, 256) for _ in range(2)),
+        self.layer1 = BottleneckStack(
+            64,
+            256,
+            num_blocks=3,
         )
 
-        self.layer2 = nn.Sequential(
-            Bottleneck(
-                256,
-                512,
-                apply_downsample=True,
-            ),
-            *(Bottleneck(512, 512) for _ in range(3)),
+        self.layer2 = BottleneckStack(
+            256,
+            512,
+            num_blocks=4,
+            apply_downsample_in_first_block=True,
         )
 
-        self.layer3 = nn.Sequential(
-            Bottleneck(
-                512,
-                1024,
-                apply_downsample=True,
-            ),
-            *(Bottleneck(1024, 1024) for _ in range(5)),
+        self.layer3 = BottleneckStack(
+            512,
+            1024,
+            num_blocks=6,
+            apply_downsample_in_first_block=True,
         )
 
-        self.layer4 = nn.Sequential(
-            Bottleneck(
-                1024,
-                2048,
-                apply_downsample=True,
-            ),
-            *(Bottleneck(2048, 2048) for _ in range(2)),
+        self.layer4 = BottleneckStack(
+            1024,
+            2048,
+            num_blocks=3,
+            apply_downsample_in_first_block=True,
         )
 
         # Classification layer
